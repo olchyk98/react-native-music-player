@@ -13,7 +13,14 @@ import image from './image.png';
 
 const iconsPath = '/assets/icons/';
 const icons = {
-  play: require('.' + iconsPath + 'play.png')
+  play: require('.' + iconsPath + 'play.png'),
+  down: require('.' + iconsPath + 'down.png'),
+  shuffle: require('.' + iconsPath + 'shuffle.png'),
+  replay: require('.' + iconsPath + 'replay.png'),
+  playWhite: require('.' + iconsPath + 'playWhite.png'),
+  pauseWhite: require('.' + iconsPath + 'pauseWhite.png'),
+  prevWhite: require('.' + iconsPath + 'prevWhite.png'),
+  nextWhite: require('.' + iconsPath + 'nextWhite.png')
 }
 
 class ListSong extends Component {
@@ -71,6 +78,64 @@ class List extends Component {
   }
 }
 
+class PlayerControlsButton extends Component {
+  render() {
+    return(
+      <View
+        style={[ styles.playerControlsBtn, [(this.props.special) ? styles.playerControlsBtnBordered : ""] ]}>
+        <Image style={[ styles.playerControlsBtnImage ]} source={ this.props.icon } />
+      </View>
+    );
+  }
+}
+
+class PlayerControls extends Component {
+  render() {
+    return(
+      <View style={[ styles.playerControls ]}>
+        <PlayerControlsButton
+          special={ false }
+          icon={ icons.prevWhite }
+        />
+        <PlayerControlsButton
+          special={ true }
+          icon={ icons.playWhite }
+        />
+        <PlayerControlsButton
+          special={ false }
+          icon={ icons.nextWhite }
+        />
+      </View>
+    );
+  }
+}
+
+class Player extends Component {
+  render() {
+    return(
+      <View style={[ styles.player, styles.display ]}>
+        <View style={[ styles.playerMinaction ]}>
+          <View style={[ styles.playerMinactionClose ]}>
+            <Image style={[ styles.playerMinactionCloseImage ]} source={ icons.down } />
+          </View>
+        </View>
+        <View style={[ styles.playerAddons ]}>
+          <Image style={[ styles.playerAddonsButton ]} source={ icons.shuffle } />
+          <Image style={[ styles.playerAddonsButton ]} source={ icons.replay } />
+        </View>
+        <View style={[ styles.playerImagecontainer ]}>
+          <Image style={[ styles.playerImagecontainerImage ]} source={ image } />
+        </View>
+        <View style={[ styles.playerInfo ]}>
+          <Text style={[ styles.playerInfoName ]}>The Fall</Text>
+          <Text style={[ styles.playerInfoLabel ]}>Hucci</Text>
+        </View>
+        <PlayerControls />
+      </View>
+    );
+  }
+}
+
 class App extends Component {
   // async componentDidMount() {
     // const media = await MediaLibrary.getAssetsAsync({
@@ -82,6 +147,7 @@ class App extends Component {
     return(
       <Fragment>
         <List />
+        <Player />
       </Fragment>
     );
   }

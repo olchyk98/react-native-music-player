@@ -6,7 +6,8 @@ Kedzie - Darkest Deep;
 
 # stack
 React Native,
-Expo
+Expo,
+Redux
 
 # text editors
 Sublime Text 2, 3,

@@ -3,7 +3,7 @@
   "expoServerPort": null,
   "packagerPort": null,
   "packagerPid": null,
-  "expoServerNgrokUrl": null,
-  "packagerNgrokUrl": null,
-  "ngrokPid": null
+  "expoServerNgrokUrl": "https://nc-6tx.oles.react-native-music-player.exp.direct",
+  "packagerNgrokUrl": "https://packager.nc-6tx.oles.react-native-music-player.exp.direct",
+  "ngrokPid": 59613
 }

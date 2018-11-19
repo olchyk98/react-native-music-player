@@ -15,7 +15,8 @@ const variables = {
         focusCol: '#4241B0'
     },
     listSongs: {
-        padding: innerWidth / 100 * 17.5 // 17.5%
+        padding: innerWidth / 100 * 17.5, // 17.5%
+        loaderSize: 75
     },
     listSongsSong: {
         height: 85,
@@ -36,7 +37,7 @@ const variables = {
     },
     playerControls: {
         height: 55,
-        buttonSize: 17.5
+        buttonSize: 15
     },
     playerProgress: {
         pointerSize: 10
@@ -44,6 +45,22 @@ const variables = {
 }
 
 const styles = StyleSheet.create({
+    globalError: {
+        position: "absolute",
+        top: 0,
+        bottom:0,
+        left: 0,
+        right: 0,
+        alignItems: "center",
+        justifyContent: "center"
+    },
+    globalErrorText: {
+        fontWeight: "200",
+        textTransform: "uppercase",
+        color: "black",
+        width: "80%",
+        textAlign: "center"
+    },
     display: {
         paddingTop: (Platform.OS !== 'ios' ? StatusBar.currentHeight : 20) + 25,
         paddingBottom: variables.player.minHeight
@@ -68,6 +85,19 @@ const styles = StyleSheet.create({
         flexDirection: "column",
         width: "100%",
         marginTop: 25
+    },
+    listSongsLoader: {
+        flex: 1,
+        alignItems: "center"
+    },
+    listSongsInfo: {
+        width: "80%",
+        fontWeight: "200",
+        color: "rgba(0, 0, 0, .35)"
+    },
+    listSongsLoaderIcon: {
+        height: variables.listSongs.loaderSize,
+        width: variables.listSongs.loaderSize
     },
     listSongsSong: {
         height: variables.listSongsSong.height,
@@ -100,17 +130,22 @@ const styles = StyleSheet.create({
     listSongsSongInfoTitleName: {
         fontWeight: "500",
         fontSize: 17.5,
-        marginBottom: variables.listSongsSong.infoMargin
+        marginBottom: variables.listSongsSong.infoMargin,
+        flexShrink: 1,
+        width: innerWidth,
     },
     listSongsSongInfoTitleLabel: {
         fontWeight: "200",
         fontSize: 15,
         color: "rgba(0, 0, 0, .4)",
-        marginTop: variables.listSongsSong.infoMargin
+        marginTop: variables.listSongsSong.infoMargin,
+        flexShrink: 1,
+        width: innerWidth
     },
     listSongsSongInfoImagecointainer: {
         height: variables.listSongsSong.height / 100 * variables.listSongsSong.imageHeight,
-        width: variables.listSongsSong.height / 100 * variables.listSongsSong.imageHeight
+        width: variables.listSongsSong.height / 100 * variables.listSongsSong.imageHeight,
+        marginRight: 20
     },
     listSongsSongInfoImagecointainerImage: {
         height: variables.listSongsSong.height / 100 * variables.listSongsSong.imageHeight,
@@ -120,7 +155,10 @@ const styles = StyleSheet.create({
     listSongsSongControls: {
         flexDirection: "row",
         alignItems: "center",
-        opacity: .75
+        opacity: .75,
+        flexShrink: 0,
+        position: "absolute",
+        right: 0
     },
     listSongsSongControlsPlay: {
         height: variables.listSongsSong.controlsSize,
@@ -138,24 +176,52 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "space-around",
         paddingLeft: variables.player.padding,
-        paddingRight: variables.player.padding
+        paddingRight: variables.player.padding,
+        backgroundColor: "red"
     },
     playerMinaction: {
         flexDirection: "row",
+        position: "absolute",
         alignItems: "center",
-        justifyContent: "flex-end",
-        width: "100%"
+        justifyContent: "space-between",
+        height: variables.player.minHeight,
+        width: "100%",
     },
-    playerMinactionClose: {
+    playerMinactionTitle: {
+        flexDirection: "row",
+        alignItems: "center"
+    },
+    playerMinactionTitlePlayi: {
+        marginRight: 25,
+        height: variables.player.minBtnSize / 2,
+        width: variables.player.minBtnSize / 2,
+        alignItems: "center"
+    },
+    playerMinactionTitleName: {
+        color: "white",
+        fontSize: 15,
+        fontWeight: "500",
+        marginRight: 12.5
+    },
+    playerMinactionTitleLabel: {
+        fontWeight: "300",
+        color: "rgba(255, 255, 255, .65)"
+    },
+    playerMinactionToggle: {
         height: variables.player.minBtnSize,
         width: variables.player.minBtnSize,
         borderWidth: 1,
         borderColor: "rgba(0, 0, 0, .2)",
-        alignItems: "center",
-        justifyContent: "center",
         borderRadius: variables.player.minBtnSize / 2
     },
-    playerMinactionCloseImage: {
+    playerMinactionToggleImagecontroller: {
+        height: "100%",
+        width: "100%",
+        position: "absolute",
+        alignItems: "center",
+        justifyContent: "center"
+    },
+    playerMinactionToggleImage: {
         height: variables.player.minBtnSize / 100 * 37.5,
         width: variables.player.minBtnSize / 100 * 37.5
     },
@@ -164,7 +230,7 @@ const styles = StyleSheet.create({
         width: "100%",
         justifyContent: "center",
         flexDirection: "row",
-        opacity: .3
+        opacity: .3,
     },
     playerAddonsButton: {
         height: variables.player.addonBtnSize,
@@ -221,7 +287,8 @@ const styles = StyleSheet.create({
         justifyContent: "center"
     },
     playerControlsBtnBordered: {
-        borderColor: "white",
+        borderLeftColor: "white",
+        borderRightColor: "white",
         borderWidth: 1
     },
     playerControlsBtnImage: {
@@ -256,4 +323,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export { styles, variables };
+export { styles, variables, innerWidth, innerHeight };

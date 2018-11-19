@@ -46,9 +46,9 @@ class ListSong extends Component {
     }
 
     playSong = () => {
-        let { id, uri, filename } = this.props;
+        let { id, uri, duration } = this.props;
         this.props.updatePlayingSong({
-            id, uri,
+            id, uri, duration,
             name: this.convertName("name"),
             label: this.convertName("label")
         });
@@ -61,11 +61,11 @@ class ListSong extends Component {
             <View style={[ styles.listSongsSongMain ]}>
             <View style={[ styles.listSongsSongInfo ]}>
                 <View style={[ styles.listSongsSongInfoImagecointainer ]}>
-                <Image
-                    style={[ styles.listSongsSongInfoImagecointainerImage ]}
-                    source={ image }
-                    resizeMode="cover"
-                />
+                    <Image
+                        style={[ styles.listSongsSongInfoImagecointainerImage ]}
+                        source={ image }
+                        resizeMode="cover"
+                    />
                 </View>
                 <View style={[ styles.listSongsSongInfoTitle ]}>
                 <Text
@@ -82,7 +82,16 @@ class ListSong extends Component {
                 </View>
             </View>
             <View style={[ styles.listSongsSongControls ]}>
-                <Image style={[ styles.listSongsSongControlsPlay ]} source={ icons.play } />
+                {
+                    (!this.props.isListening) ? null : (
+                        <Image
+                            style={[ styles.listSongsSongControlsPlay ]}
+                            source={
+                                (!this.props.isPlaying) ? icons.pause : icons.play
+                            }
+                        />
+                    )
+                }
             </View>
             </View>
         </View>

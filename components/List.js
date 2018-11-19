@@ -29,7 +29,6 @@ class List extends Component {
                 mediaType: MediaLibrary.MediaType.audio,
                 sortBy: MediaLibrary.SortBy.modificationTime
             });
-            console.log(media);
             this.props.uploadSongsList(media);
         } else { // Cast error
             this.props.castError("We haven't got permissions to read your music files.");
@@ -46,13 +45,15 @@ class List extends Component {
                     {
                         (this.props.list.songs) ? (
                             (this.props.list.songs.length) ? (
-                                this.props.list.songs.map(({ id, uri, /*duration,*/ filename }) => (
+                                this.props.list.songs.map(({ id, uri, duration, filename }) => (
                                     <ListSong
                                         key={ id }
                                         id={ id }
                                         uri={ uri }
-                                        // duration={ duration }
+                                        duration={ duration }
                                         filename={ filename.split('.').slice(0, -1).join('.') }
+                                        isListening={ (this.props.global.currentSong && this.props.global.currentSong.id === id) || false }
+                                        isPlaying={ (this.props.global.sessionInfo && this.props.global.sessionInfo.isPlaying) || false }
                                     />
                                 ))
                             ) : (

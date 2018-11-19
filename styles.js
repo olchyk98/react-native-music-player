@@ -16,7 +16,7 @@ const variables = {
     },
     listSongs: {
         padding: innerWidth / 100 * 17.5, // 17.5%
-        loaderSize: 75
+        loaderSize: 115
     },
     listSongsSong: {
         height: 85,
@@ -93,7 +93,8 @@ const styles = StyleSheet.create({
     listSongsInfo: {
         width: "80%",
         fontWeight: "200",
-        color: "rgba(0, 0, 0, .35)"
+        color: "rgba(0, 0, 0, .35)",
+        textAlign: "center"
     },
     listSongsLoaderIcon: {
         height: variables.listSongs.loaderSize,
@@ -212,7 +213,9 @@ const styles = StyleSheet.create({
         width: variables.player.minBtnSize,
         borderWidth: 1,
         borderColor: "rgba(0, 0, 0, .2)",
-        borderRadius: variables.player.minBtnSize / 2
+        borderRadius: variables.player.minBtnSize / 2,
+        position: "absolute",
+        right: 0
     },
     playerMinactionToggleImagecontroller: {
         height: "100%",
@@ -265,13 +268,17 @@ const styles = StyleSheet.create({
         marginBottom: variables.playerTitle.contentMargin,
         color: variables.global.focusCol,
         fontWeight: "600",
-        fontSize: 24
+        fontSize: 24,
+        textAlign: "center",
+        width: "90%"
     },
     playerInfoLabel: {
         marginTop: variables.playerTitle.contentMargin,
         color: variables.global.focusCol,
         fontWeight: "300",
-        fontSize: 15
+        fontSize: 15,
+        textAlign: "center",
+        width: "90%"
     },
     playerControls: {
         width: "100%",
@@ -305,6 +312,13 @@ const styles = StyleSheet.create({
         width: "100%",
         backgroundColor: "rgba(0, 0, 0, .2)",
         borderRadius: 3
+    },
+    PlayerProgressTime: {
+        width: "100%",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginTop: 10
     },
     PlayerProgressDisplayPointer: {
         height: variables.playerProgress.pointerSize,

@@ -8,6 +8,27 @@ function reducer(state = {}, { type, payload }) {
         case 'UPDATE_PLAYING_SONG':
             a.currentSong = payload;
         break;
+        case 'UPDATE_SESSION_INFO':
+            {
+                let b = a.sessionInfo;
+                if(b) {
+                    a.sessionInfo = {
+                        ...b,
+                        ...payload
+                    }
+                } else {
+                    a.sessionInfo = payload;
+                }
+            }
+        break;
+        case 'TOGGLE_PLAY_PLAYER':
+            {
+                let b = a.sessionInfo;
+                if(b) {
+                    a.sessionInfo.isPlaying = !b.isPlaying
+                }
+            }
+        break;
         default:break;
     }
 

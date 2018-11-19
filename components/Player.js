@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import {
     View,
     Image,
@@ -7,8 +7,7 @@ import {
     Easing
 } from 'react-native';
 import {
-    Audio,
-    FileSystem
+    Audio
 } from 'expo';
 import { connect } from 'react-redux';
 import { styles, variables, innerHeight } from '../styles';
@@ -18,50 +17,8 @@ import icons from '../icons';
 import image from '../image.png';
 import vinyl from '../assets/images/vinyl.png';
 
-class PlayerControlsButton extends Component {
-    render() {
-      return(
-        <View
-          style={[ styles.playerControlsBtn, [(this.props.special) ? styles.playerControlsBtnBordered : ""] ]}>
-          <Image style={[ styles.playerControlsBtnImage ]} source={ this.props.icon } />
-        </View>
-      );
-    }
-  }
-  
-class PlayerControls extends Component {
-render() {
-    return(
-    <View style={[ styles.playerControls ]}>
-        <PlayerControlsButton
-        special={ false }
-        icon={ icons.prevWhite }
-        />
-        <PlayerControlsButton
-        special={ true }
-        icon={ icons.playWhite }
-        />
-        <PlayerControlsButton
-        special={ false }
-        icon={ icons.nextWhite }
-        />
-    </View>
-    );
-}
-}
-
-class PlayerProgress extends Component {
-render() {
-    return(
-    <View style={[ styles.PlayerProgress ]}>
-        <View style={[ styles.PlayerProgressDisplay ]}>
-        <View style={[ styles.PlayerProgressDisplayFill ]} />
-        <View style={[ styles.PlayerProgressDisplayPointer ]} />
-        </View>
-    </View>
-    );
-}
-}
+import PlayerControls from './PlayerControls';
+import PlayerProgress from './PlayerProgress';
 
 class Player extends Component {
     constructor(props) {
@@ -74,7 +31,8 @@ class Player extends Component {
             background: new Animated.Value(100),
             minToggleRotate: new Animated.Value(0),
             minToggleWhiteOpacity: new Animated.Value(1),
-            minToggleBlackOpacity: new Animated.Value(0) // XXX: Too many listeners
+            minToggleBlackOpacity: new Animated.Value(0), // XXX: Too many listeners
+            thidparty_isPlaying: false
         }
     }
 
@@ -86,7 +44,7 @@ class Player extends Component {
     }
 
     toggleScreen = (a, wm = false) => {
-        // ?AV to set 0 to all props before animation :
+        // ?AV to set all props to 0 before animation :
         // !Rejected
         
         const b = (!wm) ? 250 : 0,
@@ -152,26 +110,47 @@ class Player extends Component {
         ]).start();
     }
 
-    componentDidUpdate(a) {
-        {
+    async componentDidUpdate(a) {
+        { // toggled modal
             let b = this.props.player.isOpened;
             if(a.player.isOpened !== this.props.player.isOpened) {
                 this.toggleScreen(b);
             }
         }
-        {
+        { // new song
             let b = this.props.global.currentSong;
             if(a.global.currentSong !== b) {
                 this.props.togglePlayerVisibility(true);
                 this.playSong(b);
             }
         }
+        { // play/pause sync // ?prevProps return currentProps and I don't know why
+            let b = this.props.global.sessionInfo;
+            if(b && b.isPlaying !== this.state.thidparty_isPlaying) {
+                this.setState(() => ({
+                    thidparty_isPlaying: b.isPlaying
+                }));
+                await this.props.player.module[((b.isPlaying) ? "playAsync" : "pauseAsync")]();
+            }
+        }
     }
 
     playSong = async a => {
-        const player = new Audio.Sound();
-        const b = await player.loadAsync({ uri: a.uri });
-        await player.playAsync();
+        let player = this.props.player.module;
+        if(this.props.player.module) {
+            await this.props.player.module.stopAsync(); // stop
+            await this.props.player.module.unloadAsync(); // clear prev song
+        } else {
+            player = new Audio.Sound();
+            this.props.setPlayerModule(player);
+        }
+
+        await player.loadAsync({ uri: a.uri, downloadFirst: false }); // load new
+        await player.playAsync(); // play
+
+        this.props.updateSessionInfo({
+            isPlaying: true
+        });
     }
 
     render() {
@@ -182,7 +161,7 @@ class Player extends Component {
 
         const minBtnRotation = this.state.minToggleRotate.interpolate({
             inputRange: [0, 180],
-            outputRange: ["0deg", "180deg"]
+            outputRange: ["180deg", "0deg"]
         });
 
         return(
@@ -206,11 +185,27 @@ class Player extends Component {
                         }
                     ]}>
                         <Image
-                            source={ icons.playWhite }
+                            source={
+                                (( this.props.global.sessionInfo && this.props.global.sessionInfo.isPlaying ) || false) ? (
+                                    icons.playWhite
+                                ) : (
+                                    icons.pauseWhite
+                                )
+                            }
+                            onTouchEnd={ this.props.togglePlayPlayer }
                             style={[ styles.playerMinactionTitlePlayi ]}
                         />
-                        <Text style={[ styles.playerMinactionTitleName ]}>Hucci</Text>
-                        <Text style={[ styles.playerMinactionTitleLabel ]}>The Fall</Text>
+                        <View
+                            style={[ styles.playerMinactionTitle ]}
+                            onTouchStart={ this.props.togglePlayerVisibility }
+                            onTouchMove={ this.props.togglePlayerVisibility }>
+                            <Text style={[ styles.playerMinactionTitleName ]}>
+                                { (this.props.global.currentSong && this.props.global.currentSong.name) || "" }
+                            </Text>
+                            <Text style={[ styles.playerMinactionTitleLabel ]}>
+                                { (this.props.global.currentSong && this.props.global.currentSong.label) || "" }
+                            </Text>
+                        </View>
                     </Animated.View>
                     <Animated.View
                         style={[
@@ -253,8 +248,12 @@ class Player extends Component {
                     <Image style={[ styles.playerImagecontainerImage ]} source={ image } />
                 </View>
                 <View style={[ styles.playerInfo ]}>
-                    <Text style={[ styles.playerInfoName ]}>The Fall</Text>
-                    <Text style={[ styles.playerInfoLabel ]}>Huccii</Text>
+                    <Text style={[ styles.playerInfoName ]}>
+                        { (this.props.global.currentSong && this.props.global.currentSong.name) || "" }
+                    </Text>
+                    <Text style={[ styles.playerInfoLabel ]}>
+                        { (this.props.global.currentSong && this.props.global.currentSong.label) || "" }
+                    </Text>
                 </View>
                 <PlayerControls />
                 <PlayerProgress />
@@ -272,6 +271,17 @@ const mapActionsToProps = {
     togglePlayerVisibility: payload => ({
         type: "TOGGLE_PLAYER_VISIBILITY",
         payload
+    }),
+    setPlayerModule: payload => ({
+        type: "SET_PLAYER_MODULE",
+        payload
+    }),
+    updateSessionInfo: payload => ({
+        type: "UPDATE_SESSION_INFO",
+        payload
+    }),
+    togglePlayPlayer: () => ({
+        type: "TOGGLE_PLAY_PLAYER"
     })
 }
 

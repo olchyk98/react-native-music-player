@@ -3,11 +3,11 @@ function reducer(state = {}, { type, payload }) {
 
     switch(type) {
         case 'TOGGLE_PLAYER_VISIBILITY':
-            {
-                b = "isOpened";
-                if(payload) a.isOpened = payload;
-                else a.isOpened = !a.isOpened;
-            }
+            if(payload) a.isOpened = payload;
+            else a.isOpened = !a.isOpened;
+        break;
+        case 'SET_PLAYER_MODULE':
+            a.module = payload;
         break;
         default:break;
     }

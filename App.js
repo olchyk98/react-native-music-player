@@ -7,9 +7,10 @@ import {
 } from 'react-native';
 // import { MediaLibrary } from 'expo';
 
-import styles from './styles';
+import { styles } from './styles';
 
 import image from './image.png';
+import vinyl from './assets/images/vinyl.png';
 
 const iconsPath = '/assets/icons/';
 const icons = {
@@ -110,6 +111,19 @@ class PlayerControls extends Component {
   }
 }
 
+class PlayerProgress extends Component {
+  render() {
+    return(
+      <View style={[ styles.PlayerProgress ]}>
+        <View style={[ styles.PlayerProgressDisplay ]}>
+          <View style={[ styles.PlayerProgressDisplayFill ]} />
+          <View style={[ styles.PlayerProgressDisplayPointer ]} />
+        </View>
+      </View>
+    );
+  }
+}
+
 class Player extends Component {
   render() {
     return(
@@ -124,6 +138,7 @@ class Player extends Component {
           <Image style={[ styles.playerAddonsButton ]} source={ icons.replay } />
         </View>
         <View style={[ styles.playerImagecontainer ]}>
+        <Image style={[ styles.playerImagecontainerVinyl ]} source={ vinyl } />
           <Image style={[ styles.playerImagecontainerImage ]} source={ image } />
         </View>
         <View style={[ styles.playerInfo ]}>
@@ -131,6 +146,7 @@ class Player extends Component {
           <Text style={[ styles.playerInfoLabel ]}>Hucci</Text>
         </View>
         <PlayerControls />
+        <PlayerProgress />
       </View>
     );
   }

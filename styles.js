@@ -37,6 +37,9 @@ const variables = {
     playerControls: {
         height: 55,
         buttonSize: 17.5
+    },
+    playerProgress: {
+        pointerSize: 10
     }
 }
 
@@ -107,8 +110,7 @@ const styles = StyleSheet.create({
     },
     listSongsSongInfoImagecointainer: {
         height: variables.listSongsSong.height / 100 * variables.listSongsSong.imageHeight,
-        width: variables.listSongsSong.height / 100 * variables.listSongsSong.imageHeight,
-        marginRight: 15
+        width: variables.listSongsSong.height / 100 * variables.listSongsSong.imageHeight
     },
     listSongsSongInfoImagecointainerImage: {
         height: variables.listSongsSong.height / 100 * variables.listSongsSong.imageHeight,
@@ -172,12 +174,21 @@ const styles = StyleSheet.create({
     },
     playerImagecontainer: {
         height: variables.player.previewSize,
-        width: variables.player.previewSize
+        width: variables.player.previewSize,
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "row"
     },
     playerImagecontainerImage: {
         height: "100%",
         width: "100%",
-        borderRadius: 5
+        borderRadius: 2.5
+    },
+    playerImagecontainerVinyl: {
+        height: "115%",
+        width: "115%",
+        position: "absolute",
+        right: "-50%"
     },
     playerInfo: {
         flexDirection: "column",
@@ -216,7 +227,33 @@ const styles = StyleSheet.create({
     playerControlsBtnImage: {
         height: variables.playerControls.buttonSize,
         width: variables.playerControls.buttonSize
+    },
+    PlayerProgress: {
+        flexDirection: "column",
+        width: "100%",
+        marginTop: 25
+    },
+    PlayerProgressDisplay: {
+        height: 2.5,
+        width: "100%",
+        backgroundColor: "rgba(0, 0, 0, .2)",
+        borderRadius: 3
+    },
+    PlayerProgressDisplayPointer: {
+        height: variables.playerProgress.pointerSize,
+        width: variables.playerProgress.pointerSize,
+        borderRadius: variables.playerProgress.pointerSize / 2,
+        backgroundColor: variables.global.focusCol,
+        top: -variables.playerProgress.pointerSize / 2 + 1
+    },
+    PlayerProgressDisplayFill: {
+        height: "100%",
+        backgroundColor: variables.global.focusCol,
+        width: "80%",
+        position: "absolute",
+        top: 0,
+        left: 0
     }
 });
 
-export default styles;
+export { styles, variables };

@@ -5,41 +5,42 @@ import {
 } from 'react-native';
 
 import { connect } from 'react-redux';
-import { styles } from '../styles';
+import { styles, variables, innerWidth } from '../styles';
 
 class PlayerProgress extends Component {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            currentTime: 0
-        }
-    }
-
-    async componentDidUpdate() {
-        if(this.props.module) {
-            let { positionMillis: b } = await this.props.module.getStatusAsync();
-            if(b) {
-                this.setState(() => ({ currentTime: b / 1000 }));
-            }
-        }
-    }
-
     getTime = stamp => {
-        if(!this.props.global.currentSong || !this.props.global.sessionInfo) return "";
+        let {
+            currentSong,
+            sessionInfo
+        } = this.props.global;
+        if(!currentSong || !sessionInfo || !sessionInfo.currentTime) return "";
 
-        let a = "",
-            c = c => c.toString(),
+        let c = c => c.toString(),
             d = d => (c(d).length === 1) ? 0 + c(d) : c(d),
             e = (stamp === "current") ? (
-                this.state.currentTime
+                sessionInfo.currentTime
             ) : (
-                this.props.global.currentSong.duration
+                currentSong.duration
             ),
             f = Math.floor(e / 60),
             g = Math.floor(e % 60);
 
         return `${ d(f) }:${ d(g) }`;
+    }
+
+    getCursor = () => {
+        let {
+            sessionInfo
+        } = this.props.global;
+        if(!sessionInfo || !sessionInfo.currentTime) return 0;
+
+        let a = innerWidth - variables.player.padding * 2, // track width (innerWidth - padding)
+            b = this.props.global.sessionInfo.currentProgress, // progress in %
+            c = a / 100 * b, // progress in px
+            d = c - variables.playerProgress.pointerSize / 2 // progress - visual half of cursor
+
+        // return (innerWidth - variables.player.padding * 2) / 100 * sessionInfo.currentTime - variables.playerProgress.pointerSize / 2
+        return d;
     }
     
     render() {
@@ -47,9 +48,21 @@ class PlayerProgress extends Component {
         <View style={[ styles.PlayerProgress ]}>
             <View style={[ styles.PlayerProgressDisplay ]}>
                 <View style={[
-                    styles.PlayerProgressDisplayFill
+                    styles.PlayerProgressDisplayFill,
+                    {
+                        width: (
+                            this.props.global.sessionInfo &&
+                            this.props.global.sessionInfo.currentProgress &&
+                            this.props.global.sessionInfo.currentProgress + '%' // XXX
+                        ) || "0%"
+                    }
                 ]} />
-                <View style={[ styles.PlayerProgressDisplayPointer ]} />
+                <View style={[
+                    styles.PlayerProgressDisplayPointer,
+                    {
+                        left: this.getCursor()
+                    }
+                ]} />
             </View>
             <View style={[ styles.PlayerProgressTime ]}>
                 <Text>{ this.getTime("current") }</Text>
@@ -66,7 +79,7 @@ const mapStateToProps = ({ global, player: { module } }) => ({
 });
 
 mapActionsToProps = {
-
+    
 }
 
 export default connect(

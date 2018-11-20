@@ -41,7 +41,7 @@ class List extends Component {
                 <View style={[ styles.listHead ]}>
                 <Text style={[ styles.listHeadTitle ]}>Music</Text>
                 </View>
-                <ScrollView style={[ styles.listSongs ]}>
+                <ScrollView onScroll={ () => console.log("SCROLLING SONGS LIST") } style={[ styles.listSongs ]}>
                     {
                         (this.props.list.songs) ? (
                             (this.props.list.songs.length) ? (

@@ -29,6 +29,14 @@ function reducer(state = {}, { type, payload }) {
                 }
             }
         break;
+        case 'UPDATE_SONG_CURRENT_TIME':
+            {
+                let b = a.sessionInfo;
+                if(b) {
+                    a.sessionInfo.currentTime = payload;
+                }
+            }
+        break;
         default:break;
     }
 

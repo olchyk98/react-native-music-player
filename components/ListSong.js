@@ -5,7 +5,6 @@ import {
     Image,
     Text
 } from 'react-native';
-
 import { connect } from 'react-redux';
 
 import { styles } from '../styles';
@@ -20,7 +19,7 @@ class ListSong extends Component {
     //         d = d => d.toString(),
     //         e = e => (d(e).length === 1) ? 0 + e : e;
         
-    //     return `${ e(b) }:${ e(c) }`
+    //     return `${ d(e(b)) }:${ d(e(c)) }`
     // }
 
     convertName = type => {
@@ -57,7 +56,18 @@ class ListSong extends Component {
     render() {
         return(
         <View style={[ styles.listSongsSong ]} onTouchEnd={ this.playSong }>
-            <View style={[ styles.listSongsSongProgress ]} />
+            <View style={[
+                styles.listSongsSongProgress,
+                {
+                    width: (
+                        this.props.global.sessionInfo &&
+                        this.props.global.currentSong &&
+                        this.props.global.currentSong.id === this.props.id &&
+                        this.props.global.sessionInfo.currentProgress &&
+                        this.props.global.sessionInfo.currentProgress + '%' // XXX
+                    ) || "0%"
+                }
+            ]} />
             <View style={[ styles.listSongsSongMain ]}>
             <View style={[ styles.listSongsSongInfo ]}>
                 <View style={[ styles.listSongsSongInfoImagecointainer ]}>
@@ -99,9 +109,17 @@ class ListSong extends Component {
     }
 }
 
+const mapStateToProps = ({ global }) => ({
+    global
+});
+
+const mapActionsToProps = {
+    updatePlayingSong: payload => ({
+        type: "UPDATE_PLAYING_SONG", payload
+    })
+}
+
 export default connect(
-    () => ({}),
-    {
-        updatePlayingSong: payload => ({ type: "UPDATE_PLAYING_SONG", payload })
-    }
+    mapStateToProps,
+    mapActionsToProps
 )(ListSong);

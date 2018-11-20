@@ -2,9 +2,7 @@
 import React, { Component, Fragment } from 'react';
 import {
   View,
-  Text,
-  Image,
-  ScrollView
+  Text
 } from 'react-native';
 
 // ?Redux

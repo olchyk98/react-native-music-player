@@ -25,7 +25,7 @@ const variables = {
         controlsSize: 20
     },
     player: {
-        minHeight: 75,
+        minHeight: 75, // 75
         minBtnSize: 30,
         padding: innerWidth / 100 * 7.5,
         addonBtnSize: 20,
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         backgroundColor: "rgba(0, 0, 0, .05)",
-        width: "40%"
+        width: "0%"
     },
     listSongsSongMain: {
         width: 100 - 100 / (innerWidth / variables.listSongs.padding) + "%",
@@ -179,6 +179,17 @@ const styles = StyleSheet.create({
         paddingLeft: variables.player.padding,
         paddingRight: variables.player.padding,
         backgroundColor: "red"
+    },
+    playerMinProgress: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        width: innerWidth,
+        height: 5,
+        backgroundColor: "#8584CF",
+        borderRadius: 3,
+        alignSelf: "flex-start"
     },
     playerMinaction: {
         flexDirection: "row",
@@ -305,7 +316,10 @@ const styles = StyleSheet.create({
     PlayerProgress: {
         flexDirection: "column",
         width: "100%",
-        marginTop: 25
+        marginTop: 25,
+        height: 75,
+        flexDirection: "column",
+        justifyContent: "center"
     },
     PlayerProgressDisplay: {
         height: 2.5,
@@ -325,16 +339,24 @@ const styles = StyleSheet.create({
         width: variables.playerProgress.pointerSize,
         borderRadius: variables.playerProgress.pointerSize / 2,
         backgroundColor: variables.global.focusCol,
-        top: -variables.playerProgress.pointerSize / 2 + 1
+        top: -variables.playerProgress.pointerSize / 2 + 1,
+        left: 0
     },
     PlayerProgressDisplayFill: {
         height: "100%",
         backgroundColor: variables.global.focusCol,
-        width: "80%",
+        width: "0%",
         position: "absolute",
         top: 0,
         left: 0
     }
 });
 
-export { styles, variables, innerWidth, innerHeight };
+const platform = Platform.OS;
+export {
+    styles,
+    variables,
+    innerWidth,
+    innerHeight,
+    platform
+};

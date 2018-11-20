@@ -10,7 +10,7 @@ import {
     Audio
 } from 'expo';
 import { connect } from 'react-redux';
-import { styles, variables, innerHeight } from '../styles';
+import { styles, variables, innerHeight, innerWidth, platform } from '../styles';
 
 import icons from '../icons';
 
@@ -25,15 +25,17 @@ class Player extends Component {
         super(props);
 
         this.state = {
-            yPos: new Animated.Value(innerHeight - variables.player.minHeight),
+            yPos: new Animated.Value(innerHeight - variables.player.minHeight + ((platform === 'android') ? 45 : 0)),
             minYPos: new Animated.Value(0),
             minOpacity: new Animated.Value(1),
             background: new Animated.Value(100),
             minToggleRotate: new Animated.Value(0),
-            minToggleWhiteOpacity: new Animated.Value(1),
-            minToggleBlackOpacity: new Animated.Value(0), // XXX: Too many listeners
+            minToggleBlackOpacity: new Animated.Value(0),
+            minToggleBorderColor: new Animated.Value(255),
             thidparty_isPlaying: false
         }
+        
+        this.currentTimeInt = this.lastPlSongID = null;
     }
 
     componentDidMount() {
@@ -43,9 +45,36 @@ class Player extends Component {
         }
     }
 
+    async componentDidUpdate(a) {
+        { // toggled modal
+            let b = this.props.player.isOpened;
+            if(a.player.isOpened !== this.props.player.isOpened) {
+                this.toggleScreen(b);
+            }
+        }
+        { // new song
+            let b = this.props.global.currentSong;
+            if(a.global.currentSong !== b) {
+                this.props.togglePlayerVisibility(true);
+                this.playSong(b);
+            }
+        }
+        { // play/pause sync // ?prevProps return currentProps and I don't know why
+            let b = this.props.global.sessionInfo;
+            if(b && b.isPlaying !== this.state.thidparty_isPlaying) {
+                this.setState(() => ({
+                    thidparty_isPlaying: b.isPlaying
+                }));
+                await this.props.player.module[((b.isPlaying) ? "playAsync" : "pauseAsync")]();
+            }
+        }
+    }
+
     toggleScreen = (a, wm = false) => {
         // ?AV to set all props to 0 before animation :
         // !Rejected
+
+        // ? b - isOpened
         
         const b = (!wm) ? 250 : 0,
               c = Easing.out(Easing.linear);
@@ -54,7 +83,7 @@ class Player extends Component {
             Animated.timing(
                 this.state.yPos,
                 {
-                    toValue: (a) ? 0 : innerHeight - variables.player.minHeight,
+                    toValue: (a) ? 0 : innerHeight - variables.player.minHeight + ((platform === 'android') ? 45 : 0),
                     duration: b,
                     easing: c
                 }
@@ -92,17 +121,17 @@ class Player extends Component {
                 }
             ),
             Animated.timing(
-                this.state.minToggleWhiteOpacity,
+                this.state.minToggleBlackOpacity,
                 {
-                    toValue: (a) ? 0 : 1,
+                    toValue: (a) ? 1 : 0,
                     duration: b,
                     easing: c
                 }
             ),
             Animated.timing(
-                this.state.minToggleBlackOpacity,
+                this.state.minToggleBorderColor,
                 {
-                    toValue: (a) ? 1 : 0,
+                    toValue: (a) ? 0 : 255,
                     duration: b,
                     easing: c
                 }
@@ -110,33 +139,25 @@ class Player extends Component {
         ]).start();
     }
 
-    async componentDidUpdate(a) {
-        { // toggled modal
-            let b = this.props.player.isOpened;
-            if(a.player.isOpened !== this.props.player.isOpened) {
-                this.toggleScreen(b);
-            }
-        }
-        { // new song
-            let b = this.props.global.currentSong;
-            if(a.global.currentSong !== b) {
-                this.props.togglePlayerVisibility(true);
-                this.playSong(b);
-            }
-        }
-        { // play/pause sync // ?prevProps return currentProps and I don't know why
-            let b = this.props.global.sessionInfo;
-            if(b && b.isPlaying !== this.state.thidparty_isPlaying) {
-                this.setState(() => ({
-                    thidparty_isPlaying: b.isPlaying
-                }));
-                await this.props.player.module[((b.isPlaying) ? "playAsync" : "pauseAsync")]();
-            }
-        }
-    }
-
     playSong = async a => {
+        if(this.lastPlSongID === a.id) {
+            return this.props.togglePlayerVisibility(true);
+        }
+        /*
+            Sometimes the player is not working (progressbar doesnt display info also),
+            I think that is Expo Application's trouble, but I'm not sure.
+
+            If it still happens after compilation I can create the new player on fire playSong function,
+            instead of load a exists player
+        */
+
+
         let player = this.props.player.module;
+        {
+            let b = this.currentTimeInt;
+            if(b) clearInterval(b);
+        }
+
         if(this.props.player.module) {
             await this.props.player.module.stopAsync(); // stop
             await this.props.player.module.unloadAsync(); // clear prev song
@@ -145,12 +166,41 @@ class Player extends Component {
             this.props.setPlayerModule(player);
         }
 
-        await player.loadAsync({ uri: a.uri, downloadFirst: false }); // load new
+        try {
+            await player.loadAsync({ uri: a.uri, downloadFirst: false }); // load new
+        } catch(err) {
+            console.log(err); // debug
+        }
         await player.playAsync(); // play
 
         this.props.updateSessionInfo({
-            isPlaying: true
+            isPlaying: true,
+            currentTime: 0
         });
+
+        this.lastPlSongID = a.id;
+
+        let uct = async () => {
+            let {
+                sessionInfo,
+                currentSong
+            } = this.props.global;
+            if(!sessionInfo || !currentSong || !sessionInfo.isPlaying) return;
+
+            let { positionMillis: c } = await this.props.player.module.getStatusAsync(),
+                d = sessionInfo.currentTime,
+                e = d => Math.floor(d);
+            c /= 1000;
+            
+            this.props.updateSessionInfo({
+                currentTime: c,
+                currentProgress: 100 / (currentSong.duration / sessionInfo.currentTime)
+            });
+            if(e(d) && e(c) && e(d) === e(c)) clearInterval(this.currentTimeInt);
+        }
+
+        uct();
+        this.currentTimeInt = setInterval(() => uct(), 1000);
     }
 
     render() {
@@ -164,6 +214,11 @@ class Player extends Component {
             outputRange: ["180deg", "0deg"]
         });
 
+        const minBtnBorder = this.state.minToggleBorderColor.interpolate({
+            inputRange: [0, 255],
+            outputRange: ["rgba(0, 0, 0, .2)", "rgba(255, 255, 255, .1)"]
+        });
+
         return(
             <Animated.View style={[
                 styles.player, styles.display,
@@ -172,6 +227,17 @@ class Player extends Component {
                     backgroundColor: bgcol
                 }
             ]}>
+                <Animated.View style={[
+                    styles.playerMinProgress,
+                    {
+                        width: (
+                            this.props.global.sessionInfo &&
+                            innerWidth / 100 * this.props.global.sessionInfo.currentProgress
+                        ) || 0,
+                        opacity: this.state.minOpacity
+                    }
+                ]}>
+                </Animated.View>
                 <Animated.View style={[
                     styles.playerMinaction,
                     {
@@ -211,7 +277,8 @@ class Player extends Component {
                         style={[
                             styles.playerMinactionToggle,
                             {
-                                transform: [{ rotate: minBtnRotation }]
+                                transform: [{ rotate: minBtnRotation }],
+                                borderColor: minBtnBorder
                             }
                         ]}
                         onTouchEnd={ () => this.props.togglePlayerVisibility() }>
@@ -229,7 +296,7 @@ class Player extends Component {
                         <Animated.View style={[
                             styles.playerMinactionToggleImagecontroller,
                             {
-                                opacity: this.state.minToggleWhiteOpacity
+                                opacity: this.state.minOpacity
                             }
                         ]}>
                             <Image
@@ -282,6 +349,9 @@ const mapActionsToProps = {
     }),
     togglePlayPlayer: () => ({
         type: "TOGGLE_PLAY_PLAYER"
+    }),
+    updateSessionSongTime: payload => ({
+        type: "UPDATE_SONG_CURRENT_TIME", payload
     })
 }
 

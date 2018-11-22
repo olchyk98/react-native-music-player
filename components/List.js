@@ -1,7 +1,6 @@
 /* DOCS
 
-    TESTME 1.: main scrollView's onScrollEndDrag is not tested on IOS platform.
-    COMMITME: 2.: onScroll is not working when I don't request nativeEvent (when i req global object).
+    COMMITME: 1.: onScroll is not working when I don't request nativeEvent (when i req global object).
 
 */
 
@@ -77,11 +76,6 @@ class List extends Component {
         
         b(false);
         if(media.assets.length) this.props.uploadSongsList(media);
-
-        // TODO: try/catch, cast global error
-
-        // moreIsLoading: false
-
     }
     
 
@@ -97,7 +91,7 @@ class List extends Component {
                     scrollEventThrottle={ 400 }
                     onScroll={
                         ({ nativeEvent: { contentSize: { height: a }, contentOffset: { y: b }, layoutMeasurement: { height: c } } }) => {
-                            if(a - b <= c + 20) this.requestUpdate(); // !NOT TESTED ON IOS
+                            if(a - b <= c + 20) this.requestUpdate();
                         }
                     }>
                     {

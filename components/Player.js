@@ -170,8 +170,9 @@ class Player extends Component {
             await player.loadAsync({ uri: a.uri, downloadFirst: false }); // load new
         } catch(err) {
             console.log(err);
-            alert("An error occured while we tried to open this song.");
+            return alert("An error occured while we tried to open this song.");
         }
+
         await player.playAsync(); // play
 
         this.props.updateSessionInfo({
@@ -188,9 +189,14 @@ class Player extends Component {
             } = this.props.global;
             if(!sessionInfo || !currentSong || !sessionInfo.isPlaying) return;
 
-            let { positionMillis: c } = await this.props.player.module.getStatusAsync(),
+            let { positionMillis: c, isPlaying } = await this.props.player.module.getStatusAsync(),
                 d = sessionInfo.currentTime,
                 e = d => Math.floor(d);
+            // Prevent panic initial wirr player stop
+            if(this.props.global.sessionInfo.isPlaying !== isPlaying) {
+                this.props.updateSessionInfo({ isPlaying });
+            }
+
             c /= 1000;
             
             this.props.updateSessionInfo({

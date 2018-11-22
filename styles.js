@@ -16,7 +16,8 @@ const variables = {
     },
     listSongs: {
         padding: innerWidth / 100 * 17.5, // 17.5%
-        loaderSize: 115
+        loaderSize: 115,
+        moreLoaderSize: 75
     },
     listSongsSong: {
         height: 85,
@@ -71,6 +72,11 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
+    },
+    listMoreloader: {
+        height: variables.listSongs.moreLoaderSize,
+        width: variables.listSongs.moreLoaderSize,
+        alignSelf: "center"
     },
     listHead: {
         alignItems: "center",

@@ -1,3 +1,10 @@
+/* DOCS
+
+    TESTME 1.: main scrollView's onScrollEndDrag is not tested on IOS platform.
+    COMMITME: 2.: onScroll is not working when I don't request nativeEvent (when i req global object).
+
+*/
+
 import React, { Component } from 'react';
 import {
     View,
@@ -18,6 +25,20 @@ import strikeLoader from '../assets/images/loader.gif'
 import { styles } from '../styles';
 
 class List extends Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            moreIsLoading: false
+        }
+
+        this.config = {
+            first: 20,
+            mediaType: MediaLibrary.MediaType.audio,
+            sortBy: MediaLibrary.SortBy.modificationTime
+        }
+    }
+
     async componentDidMount() {
         /* Ask READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE permissions */
         const { status } = await Permissions.askAsync(
@@ -25,23 +46,58 @@ class List extends Component {
         );
 
         if(status === 'granted') { // IF ok THEN read music
-            const media = await MediaLibrary.getAssetsAsync({
-                mediaType: MediaLibrary.MediaType.audio,
-                sortBy: MediaLibrary.SortBy.modificationTime
-            });
+            const media = await MediaLibrary.getAssetsAsync(this.config);
+
             this.props.uploadSongsList(media);
         } else { // Cast error
             this.props.castError("We haven't got permissions to read your music files.");
         }
     }
 
+    requestUpdate = async () => {
+        let a = this.props.list;
+        if(
+            !a.songs ||
+            !a.songs.length ||
+            !a.songsInfo.hasNextPage ||
+            a.songsInfo.cursorIN === "_NO_CURSOR_PROVIDED"
+        ) return;
+
+        let b = pl => this.setState(() => ({ moreIsLoading: pl }));
+        b(true);
+
+        const media = await MediaLibrary.getAssetsAsync({
+            ...this.config,
+            ...{
+                after: a.songsInfo.cursorIN
+            }
+        });
+        
+        b(false);
+        if(media.assets.length) this.props.uploadSongsList(media);
+
+        // TODO: try/catch, cast global error
+
+        // moreIsLoading: false
+
+    }
+    
+
     render() {
         return(
-            <View style={[ styles.list, styles.display ]}>
+            <View
+                style={[ styles.list, styles.display ]}>
                 <View style={[ styles.listHead ]}>
-                <Text style={[ styles.listHeadTitle ]}>Music</Text>
+                    <Text style={[ styles.listHeadTitle ]}>Music</Text>
                 </View>
-                <ScrollView onScroll={ () => console.log("SCROLLING SONGS LIST") } style={[ styles.listSongs ]}>
+                <ScrollView
+                    style={[ styles.listSongs ]}
+                    scrollEventThrottle={ 400 }
+                    onScroll={
+                        ({ nativeEvent: { contentSize: { height: a }, contentOffset: { y: b }, layoutMeasurement: { height: c } } }) => {
+                            if(a - b <= c + 20) this.requestUpdate(); // !NOT TESTED ON IOS
+                        }
+                    }>
                     {
                         (this.props.list.songs) ? (
                             (this.props.list.songs.length) ? (
@@ -71,6 +127,15 @@ class List extends Component {
                                     resizeMode="cover"
                                 />
                             </View>
+                        )
+                    }
+                    {
+                        (!this.state.moreIsLoading) ? null : (
+                            <Image
+                                source={ strikeLoader }
+                                style={[ styles.listMoreloader ]}
+                                resizeMode="cover"
+                            />
                         )
                     }
                 </ScrollView>

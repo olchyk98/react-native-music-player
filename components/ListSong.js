@@ -3,7 +3,8 @@ import React, { Component } from 'react';
 import {
     View,
     Image,
-    Text
+    Text,
+    TouchableOpacity
 } from 'react-native';
 import { connect } from 'react-redux';
 
@@ -55,7 +56,7 @@ class ListSong extends Component {
 
     render() {
         return(
-        <View style={[ styles.listSongsSong ]} onTouchEnd={ this.playSong }>
+        <TouchableOpacity activeOpacity={ 0.9 } style={[ styles.listSongsSong ]} onPress={ this.playSong }>
             <View style={[
                 styles.listSongsSongProgress,
                 {
@@ -104,7 +105,7 @@ class ListSong extends Component {
                 }
             </View>
             </View>
-        </View>
+        </TouchableOpacity>
         );
     }
 }

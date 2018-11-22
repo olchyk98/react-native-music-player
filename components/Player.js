@@ -1,3 +1,12 @@
+/*
+
+    This shit lags, because redux store uses very dirty and fucked in head functions here.
+    On play refresh action (in dev mode) fps goes down to 30-40 fps.
+        - 4gb & 2.4z
+    Hope, it's last 'project' on React Native.
+
+*/
+
 import React, { Component } from 'react';
 import {
     View,
@@ -32,19 +41,31 @@ class Player extends Component {
             minToggleRotate: new Animated.Value(0),
             minToggleBlackOpacity: new Animated.Value(0),
             minToggleBorderColor: new Animated.Value(255),
-            thidparty_isPlaying: false
+            thirdparty_isPlaying: false,
+            songIsLoading: false
         }
         
         this.currentTimeInt = this.lastPlSongID = null;
     }
 
     componentDidMount() {
+        // Load player config
+        Audio.setAudioModeAsync({
+            playsInSilentModeIOS: false,
+            allowsRecordingIOS: false,
+            interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_MIX_WITH_OTHERS,
+            shouldDuckAndroid: true,
+            interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DUCK_OTHERS,
+            playThroughEarpieceAndroid: true
+        });
+
+        // Perform calibration by looking at the initial redux state
         let a = this.props.player.isOpened;
         if(a !== false) { // if initialState !== defaultInitialState
             this.toggleScreen(a, true);
         }
     }
-
+ 
     async componentDidUpdate(a) {
         { // toggled modal
             let b = this.props.player.isOpened;
@@ -61,9 +82,9 @@ class Player extends Component {
         }
         { // play/pause sync // ?prevProps return currentProps and I don't know why
             let b = this.props.global.sessionInfo;
-            if(b && b.isPlaying !== this.state.thidparty_isPlaying) {
+            if(b && b.isPlaying !== this.state.thirdparty_isPlaying) {
                 this.setState(() => ({
-                    thidparty_isPlaying: b.isPlaying
+                    thirdparty_isPlaying: b.isPlaying
                 }));
                 await this.props.player.module[((b.isPlaying) ? "playAsync" : "pauseAsync")]();
             }
@@ -140,9 +161,13 @@ class Player extends Component {
     }
 
     playSong = async a => {
-        if(this.lastPlSongID === a.id) {
-            return this.props.togglePlayerVisibility(true);
-        }
+        if(this.state.songIsLoading) return;
+
+        this.props.togglePlayerVisibility(true);
+        if(this.lastPlSongID === a.id) return;
+
+        let aq = pl => this.setState(() => ({ songIsLoading: pl }));
+        aq(true);
         /*
             Sometimes the player is not working (progressbar doesnt display info also),
             I think that is Expo Application's trouble, but I'm not sure.
@@ -182,23 +207,59 @@ class Player extends Component {
 
         this.lastPlSongID = a.id;
 
-        let uct = async () => {
-            let {
+        let uct = async (pass = false) => {
+            var {
                 sessionInfo,
                 currentSong
             } = this.props.global;
-            if(!sessionInfo || !currentSong || !sessionInfo.isPlaying) return;
+            if(!pass && (!sessionInfo || !currentSong || !sessionInfo.isPlaying)) return;
 
-            let { positionMillis: c, isPlaying } = await this.props.player.module.getStatusAsync(),
+            let { positionMillis: c, isPlaying, playableDurationMillis: f } = await this.props.player.module.getStatusAsync(),
                 d = sessionInfo.currentTime,
                 e = d => Math.floor(d);
+
+            if(c === f) {
+                var { sessionInfo: { currSongIndex: b }, songs } = this.props.list;
+                console.log(!Number.isInteger(b), !songs, b === "_SONG_NOT_FOUND");
+                if(!Number.isInteger(b) || !songs || b === "_SONG_NOT_FOUND") return;
+                
+                let { id, uri, duration, filename } = songs[b + 1];
+
+                let convertName = type => { // copied
+                    let a = "",
+                        b = filename.split('.').slice(0, -1).join('.'),
+                        c = new RegExp(/(.*) - (.*)/),
+                        d = new RegExp(/(.*)-(.*)/),
+                        e = b.match(c) || b.match(d);
+            
+                    switch(type) {
+                        case 'name':
+                            if(!e) { a = b; break; }
+                            a = e[2];
+                        break;
+                        case 'label':
+                            if(!e) break;
+                            a = e[1];
+                        break;
+                        default:break;
+                    }
+            
+                    return a;
+                }
+        
+                this.props.updatePlayingSong({
+                    id, uri, duration,
+                    name: convertName("name"),
+                    label: convertName("label")
+                });
+            }
             // Prevent panic initial wirr player stop
             if(this.props.global.sessionInfo.isPlaying !== isPlaying) {
                 this.props.updateSessionInfo({ isPlaying });
             }
 
             c /= 1000;
-            
+          
             this.props.updateSessionInfo({
                 currentTime: c,
                 currentProgress: 100 / (currentSong.duration / sessionInfo.currentTime)
@@ -206,8 +267,9 @@ class Player extends Component {
             if(e(d) && e(c) && e(d) === e(c)) clearInterval(this.currentTimeInt);
         }
 
-        uct();
+        uct(true);
         this.currentTimeInt = setInterval(() => uct(), 1000);
+        aq(false);
     }
 
     render() {
@@ -329,16 +391,19 @@ class Player extends Component {
                         { (this.props.global.currentSong && this.props.global.currentSong.label) || "" }
                     </Text>
                 </View>
-                <PlayerControls />
+                <PlayerControls
+                    _onClick={ this.handleControl }
+                />
                 <PlayerProgress />
             </Animated.View>
         );
     }
 }
 
-const mapStateToProps = ({ player, global }) => ({
+const mapStateToProps = ({ player, global, list }) => ({
     player,
-    global
+    global,
+    list
 });
 
 const mapActionsToProps = {
@@ -359,6 +424,9 @@ const mapActionsToProps = {
     }),
     updateSessionSongTime: payload => ({
         type: "UPDATE_SONG_CURRENT_TIME", payload
+    }),
+    updatePlayingSong: payload => ({
+        type: "UPDATE_PLAYING_SONG", payload
     })
 }
 

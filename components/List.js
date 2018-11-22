@@ -55,6 +55,8 @@ class List extends Component {
     }
 
     requestUpdate = async () => {
+        if(this.state.moreIsLoading) return;
+        
         let a = this.props.list;
         if(
             !a.songs ||

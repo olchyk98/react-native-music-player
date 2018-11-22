@@ -169,7 +169,8 @@ class Player extends Component {
         try {
             await player.loadAsync({ uri: a.uri, downloadFirst: false }); // load new
         } catch(err) {
-            console.log(err); // debug
+            console.log(err);
+            alert("An error occured while we tried to open this song.");
         }
         await player.playAsync(); // play
 
